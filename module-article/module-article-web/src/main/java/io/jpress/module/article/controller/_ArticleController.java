@@ -155,6 +155,7 @@ public class _ArticleController extends AdminControllerBase {
             @Form(name = "article.content", message = "文章内容不能为空")
     })
     public void doWriteSave() {
+
         Article article = getModel(Article.class, "article");
 
         if (!validateSlug(article)) {
@@ -170,7 +171,6 @@ public class _ArticleController extends AdminControllerBase {
                 return;
             }
         }
-
 
         long id = articleService.doGetIdBySaveOrUpdateAction(article);
         articleService.doUpdateCommentCount(id);
@@ -377,7 +377,8 @@ public class _ArticleController extends AdminControllerBase {
      * 删除评论
      */
     public void doCommentDel() {
-        commentService.deleteById(getIdPara());
+        Long id = getParaToLong("id");
+        commentService.deleteById(id);
         renderJson(Ret.ok());
     }
 

@@ -16,14 +16,18 @@
 package io.jpress.web.commons.controller;
 
 import com.jfinal.core.JFinal;
+import com.jfinal.kit.Ret;
 import com.jfinal.upload.UploadFile;
 import io.jboot.utils.FileUtils;
 import io.jboot.web.controller.annotation.RequestMapping;
+import io.jpress.JPressOptions;
 import io.jpress.commons.utils.AliyunOssUtils;
 import io.jpress.commons.utils.AttachmentUtils;
 import io.jpress.model.Attachment;
+import io.jpress.service.OptionService;
 import io.jpress.web.base.UserControllerBase;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +37,9 @@ import java.util.Map;
  */
 @RequestMapping("/commons/ckeditor")
 public class CKEditorController extends UserControllerBase {
+
+    @Inject
+    OptionService optionService;
 
     public void index() {
         renderError(404);
@@ -48,20 +55,26 @@ public class CKEditorController extends UserControllerBase {
 
         UploadFile uploadFile = getFile();
         if (uploadFile == null) {
-            renderText("请提交上传的文件。");
+            renderJson(Ret.create("error", Ret.create("message", "请选择要上传的文件")));
             return;
         }
+
+
+        String mineType = uploadFile.getContentType();
+        String fileType = mineType.split("/")[0];
+        Integer maxImgSize = JPressOptions.getAsInt("attachment_img_maxsize", 2);
+        Integer maxOtherSize = JPressOptions.getAsInt("attachment_other_maxsize", 100);
+        Integer maxSize = "image".equals(fileType) ? maxImgSize : maxOtherSize;
         File file = uploadFile.getFile();
-        if (file != null) {
-            int fileSize = Math.round(file.length() / 1024 * 100) / 100;
-            if (fileSize > 2048) {
-                renderText("图片大小不能超过2MB");
-                return;
-            }
+        int fileSize = Math.round(file.length() / 1024 * 100) / 100;
+        if (fileSize > maxSize * 1024) {
+            file.delete();
+            renderJson(Ret.create("error", Ret.create("message", "上传文件大小不能超过 " + maxSize + " MB")));
+            return;
         }
 
-        String path = AttachmentUtils.moveFile(uploadFile);
 
+        String path = AttachmentUtils.moveFile(uploadFile);
         AliyunOssUtils.upload(path, AttachmentUtils.file(path));
 
         Attachment attachment = new Attachment();
@@ -69,7 +82,7 @@ public class CKEditorController extends UserControllerBase {
         attachment.setTitle(uploadFile.getOriginalFileName());
         attachment.setPath(path.replace("\\", "/"));
         attachment.setSuffix(FileUtils.getSuffix(uploadFile.getFileName()));
-        attachment.setMimeType(uploadFile.getContentType());
+        attachment.setMimeType(mineType);
 
         if (attachment.save()) {
 
@@ -82,9 +95,8 @@ public class CKEditorController extends UserControllerBase {
             map.put("url", JFinal.me().getContextPath() + attachment.getPath());
             renderJson(map);
         } else {
-            renderText("系统错误");
+            renderJson(Ret.create("error", Ret.create("message", "系统错误")));
         }
     }
-
 
 }

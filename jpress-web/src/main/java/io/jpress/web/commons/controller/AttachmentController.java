@@ -19,13 +19,16 @@ import com.jfinal.kit.Ret;
 import com.jfinal.upload.UploadFile;
 import io.jboot.utils.FileUtils;
 import io.jboot.web.controller.annotation.RequestMapping;
+import io.jpress.JPressOptions;
 import io.jpress.commons.utils.AliyunOssUtils;
 import io.jpress.commons.utils.AttachmentUtils;
 import io.jpress.model.Attachment;
 import io.jpress.service.AttachmentService;
+import io.jpress.service.OptionService;
 import io.jpress.web.base.UserControllerBase;
 
 import javax.inject.Inject;
+import java.io.File;
 
 /**
  * @author Michael Yang 杨福海 （fuhai999@gmail.com）
@@ -39,7 +42,8 @@ public class AttachmentController extends UserControllerBase {
 
     @Inject
     private AttachmentService as;
-
+    @Inject
+    OptionService optionService;
 
     public void upload() {
         if (!isMultipartRequest()) {
@@ -49,13 +53,25 @@ public class AttachmentController extends UserControllerBase {
 
         UploadFile uploadFile = getFile();
         if (uploadFile == null) {
-            renderJson(Ret.fail().set("success", false));
+            renderJson(Ret.fail().set("message", "请选择要上传的文件"));
+            return;
+        }
+
+        String mineType = uploadFile.getContentType();
+        String fileType = mineType.split("/")[0];
+        Integer maxImgSize = JPressOptions.getAsInt("attachment_img_maxsize", 2);
+        Integer maxOtherSize = JPressOptions.getAsInt("attachment_other_maxsize", 100);
+        Integer maxSize = "image".equals(fileType) ? maxImgSize : maxOtherSize;
+        File file = uploadFile.getFile();
+        int fileSize = Math.round(file.length() / 1024 * 100) / 100;
+        if (fileSize > maxSize * 1024) {
+            file.delete();
+            renderJson(Ret.fail().set("message", "上传文件大小不能超过 " + maxSize + " MB"));
             return;
         }
 
         String path = AttachmentUtils.moveFile(uploadFile);
         AliyunOssUtils.upload(path, AttachmentUtils.file(path));
-
 
         Attachment attachment = new Attachment();
         attachment.setUserId(getLoginedUser().getId());

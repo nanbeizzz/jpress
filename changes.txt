@@ -1,3 +1,47 @@
+jpress v1.0.4
+修复：修改错别字 "登陆" 为 "登录"
+修复：CkEditor 在选择附件的时候，无法弹出自定义附件列表的问题
+修复：CKEditor 上传文件的时候，在某些情况下会出现 undefined 的问题
+修复：用户中心投稿的时候，添加图片无法在后台显示的问题，优化 xss 逻辑
+修复：发布文章的时候，当使用markdown编辑器，可能存在xss漏洞的问题
+新增：添加 JPress 安装的时候优先读取已经存在的 jboot.properties 文件的功能
+新增：CKEditor 添加网页视频的插件和音频的插件
+新增：附件功能新增上传图片、附件大小限制配置的功能
+新增：#maxLength() 新增自定义剪切后缀的功能
+优化：优化 AliyunSmsSender 阿里云短信发送的数据签名逻辑
+优化：升级 Markdown 的相关依赖，增强 markdown 解析性能
+优化：后台 微信 功能的菜单，增强 运营插件 功能的排序
+优化：优化 阿里云 OSS 文件同步的逻辑，解决当本地开启 OSS 同步的时候可能导致文件上传过慢的问题
+
+
+
+jpress v1.0.3
+新增：Docker Cloud 的自动构建功能以及 JPress 的根目录下的 Dockerfile
+新增：阿里云 Docker 容器服务的 Compose 一键部署功能以及阿里云专属的 Dockercompose 文件
+优化：JPress 可以安装在一个已经存在 JPress 的数据库上，方便 Dockerfile 可以通过修改版本的方式平滑升级
+
+
+
+jpress v1.0.2
+修复：Maven 生成的 WAR 包会包含 install.lock 和 jboot.properties 的问题
+修复：后台个别页面会出现 CSRF Token 不可用的问题
+修复：Shortcut Icon 显示不正确的问题
+
+
+jpress v1.0.1
+优化：拼写错误，修改 SimplerEmailSender 为 SimpleEmailSender（感谢 [@xhf](https://gitee.com/pilibeibei)）
+修复：文章的 Api 接口，当微信小程序用户未登录的时候回出现空指针异常的问题
+修复：签名算法工具类签名错误的问题 （感谢 [@retire](https://gitee.com/retire)）
+修复：后台编写文章的时候，截图粘贴无法显示图片的问题
+修复：后台编写文章的时候，控制台会输出ckeditor的image cloud错误的问题
+修复：后台会输出 favicon.ico 请求404错误的问题
+
+
+jpress v1.0
+新增：模板编辑功能新增文件删除、编辑和新增的功能。
+新增：Docker 的正式版部署功能：nginx、tomcat、ssl 自动化。感谢 ( [@babyrui](https://gitee.com/babyrui))
+
+
 jpress v1.0-rc.10
 新增：支持Markdown文章导入，因此支持Hexo，Jekyll的导入功能
 修复：后台管理员无法修改其他用户状态的问题

@@ -124,7 +124,7 @@ function initCkEdtior(editor, height) {
     CKEDITOR.config.toolbar =
         [
             ['Bold', 'Italic', 'Underline', 'Strike', 'RemoveFormat'],
-            ['Blockquote', 'CodeSnippet', 'Image', 'Flash', 'Table', 'HorizontalRule'],
+            ['Blockquote', 'CodeSnippet', 'Image', 'Html5audio', 'Html5video', 'Flash', 'Table', 'HorizontalRule'],
             ['Link', 'Unlink', 'Anchor'],
             ['Outdent', 'Indent'],
             ['NumberedList', 'BulletedList'],
@@ -136,26 +136,34 @@ function initCkEdtior(editor, height) {
             ['Maximize', 'Source']
         ];
 
+    CKEDITOR.config.wordcount = {
+        showCharCount: true,
+    };
+
 
     var ed = CKEDITOR.replace(editor, {
         autoUpdateElement: true,
-        extraPlugins: 'codesnippet',
+        removePlugins: 'easyimage,cloudservices',
+        extraPlugins: 'codesnippet,uploadimage,flash,image,wordcount,notification,html5audio,html5video,widget,widgetselection,clipboard,lineutils',
         codeSnippet_theme: 'monokai_sublime',
         height: height,
-        filebrowserImageUploadUrl: jpress.cpath + '/commons/ckeditor/upload',
+        uploadUrl: jpress.cpath + '/commons/ckeditor/upload',
+        imageUploadUrl: jpress.cpath + '/commons/ckeditor/upload',
+        filebrowserUploadUrl: jpress.cpath + '/commons/ckeditor/upload',
         filebrowserBrowseUrl: jpress.cpath + '/admin/attachment/browse',
         language: 'zh-cn'
     });
 
     ed.on("dialogShow", function (event) {
-        if (_dialogShowEvent != null) {
-            return;
-        }
 
+        // 方便调试
         _dialogShowEvent = event;
 
-        event.data.getContentElement("info", "browse").removeAllListeners();
-        event.data.getContentElement("Link", "browse").removeAllListeners();
+        var infoEle = event.data.getContentElement("info", "browse");
+        if (infoEle) infoEle.removeAllListeners();
+
+        var linkEle = event.data.getContentElement("Link", "browse");
+        if (linkEle) linkEle.removeAllListeners();
 
         $(".cke_dialog_ui_button").each(function () {
             if ("浏览服务器" == $(this).text()) {
@@ -222,7 +230,7 @@ function openlayerfForSimplemde(editor) {
 }
 
 
-function openlayer(ed) {
+function openlayer(event) {
     layer.data.src = null;
     layer.open({
         type: 2,
@@ -235,8 +243,18 @@ function openlayer(ed) {
         end: function () {
             if (layer.data.src != null) {
                 var src = jpress.cpath + layer.data.src;
-                ed.data.getContentElement('info', 'txtUrl').setValue(src);
-                ed.data.getContentElement('Link', 'txtUrl').setValue(src);
+
+                var infoTxtUrlEle = event.data.getContentElement('info', 'txtUrl');
+                if (infoTxtUrlEle) infoTxtUrlEle.setValue(src);
+
+                var infoUrlEle = event.data.getContentElement('info', 'url');
+                if (infoUrlEle) infoUrlEle.setValue(src);
+
+                var infoSrcEle = event.data.getContentElement('info', 'src');
+                if (infoSrcEle) infoSrcEle.setValue(src);
+
+                var linkTxtUrlEle = event.data.getContentElement('Link', 'txtUrl')
+                if (linkTxtUrlEle) linkTxtUrlEle.setValue(src);
             }
         }
     });
@@ -261,9 +279,6 @@ function initOptionSubmit() {
         });
         return false;
     });
-
-
-
 }
 
 
